@@ -68,8 +68,26 @@ class ContactHelper {
         where: "$idColumn = ?", whereArgs: [contact.id]);
   }
 
-  getAllContacts() {
+  Future<List> getAllContacts() async {
     Database dbContact = await db;
+
+    List listMap = await dbContact.rawQuery("SELECT * FROM $contactTable");
+    List<Contact> listContact = List();
+    for (Map m in listMap) {
+      listContact.add(Contact.fromMap(m));
+    }
+    return listContact;
+  }
+
+  Future<int> getNumber() async {
+    Database dbContact = await db;
+    return Sqflite.firstIntValue(
+        await dbContact.rawQuery("SELECT COUNT(*) FROM $contactTable"));
+  }
+
+  Future close() async {
+    Database dbContact = await db;
+    dbContact.close();
   }
 }
 
@@ -80,8 +98,11 @@ class Contact {
   String phone;
   String img;
 
+  Contact();
+
   Contact.fromMap(Map map) {
     id = map[idColumn];
+    name = map[nameColumn];
     email = map[emailColumn];
     img = map[imgColumn];
     phone = map[phoneColumn];
